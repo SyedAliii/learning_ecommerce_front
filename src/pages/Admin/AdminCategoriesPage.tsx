@@ -44,7 +44,7 @@ const AdminCategoriesPage = () => {
           ],
         },
       ];
-    },
+    }, 
   });
 
   const createCategoryMutation = useMutation({
