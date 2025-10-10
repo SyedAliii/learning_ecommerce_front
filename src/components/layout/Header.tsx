@@ -90,7 +90,7 @@ export const Header = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5 text-sm">
-                    <div className="font-medium">{user.full_name}</div>
+                    <div className="font-medium">{user.name}</div>
                     <div className="text-muted-foreground text-xs">{user.email}</div>
                   </div>
                   <DropdownMenuSeparator />

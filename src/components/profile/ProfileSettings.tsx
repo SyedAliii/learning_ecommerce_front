@@ -33,7 +33,7 @@ export const ProfileSettings = () => {
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      full_name: profile?.full_name || '',
+      full_name: profile?.name || '',
       email: profile?.email || '',
     },
   });

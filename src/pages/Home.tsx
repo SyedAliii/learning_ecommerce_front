@@ -88,7 +88,7 @@ const Home = () => {
         </section>
 
         {/* Categories */}
-        <section className="py-16 bg-muted/50">
+        {/* <section className="py-16 bg-muted/50">
           <div className="container mx-auto px-4">
             <div className="mb-10">
               <h2 className="text-3xl font-bold mb-2">Shop by Category</h2>
@@ -110,7 +110,7 @@ const Home = () => {
               ))}
             </div>
           </div>
-        </section>
+        </section> */}
       </main>
 
       <Footer />

@@ -91,16 +91,16 @@ const AdminProductsListPage = () => {
                         </td>
                         <td className="px-4 py-3 font-medium">{product.title}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {product.category} › {product.sub_category}
+                          {product.category_id} › {product.sub_category_id}
                         </td>
                         <td className="px-4 py-3 text-right font-medium">
                           ${product.price.toFixed(2)}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          {product.stock < 5 ? (
-                            <Badge variant="destructive">{product.stock}</Badge>
+                          {product.quantity < 5 ? (
+                            <Badge variant="destructive">{product.quantity}</Badge>
                           ) : (
-                            <span>{product.stock}</span>
+                            <span>{product.quantity}</span>
                           )}
                         </td>
                         <td className="px-4 py-3">

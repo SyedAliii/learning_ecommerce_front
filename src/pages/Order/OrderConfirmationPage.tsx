@@ -115,9 +115,9 @@ const OrderConfirmationPage = () => {
                   <div key={index} className="flex justify-between items-center">
                     <div>
                       <p className="font-medium">{item.title}</p>
-                      <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
+                      <p className="text-sm text-muted-foreground">Quantity: {item.total_quantity}</p>
                     </div>
-                    <p className="font-semibold">${item.subtotal.toFixed(2)}</p>
+                    <p className="font-semibold">${item.qunatity_in_cart.toFixed(2)}</p>
                   </div>
                 ))}
               </div>

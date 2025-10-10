@@ -1,15 +1,15 @@
+export type UserRole = 'admin' | 'user';
+
 export interface Product {
   id: string;
   title: string;
   description: string;
   price: number;
-  stock: number;
-  category: string;
-  sub_category: string;
-  image_urls: string[];
-  slug?: string;
-  category_slug?: string;
-  sub_category_slug?: string;
+  quantity: number;
+  category_id: string;
+  subcategory_id: string;
+  product_img_urls: string[];
+  url_slug?: string;
 }
 
 export interface CartItem {
@@ -22,9 +22,12 @@ export interface CartItem {
 
 export interface User {
   id: string;
+  name: string;
   email: string;
-  full_name: string;
-  role: 'customer' | 'shop_owner';
+  role: UserRole;
+  items: CartProduct[];
+  status_code: number;
+  msg: string;
 }
 
 export interface Order {
@@ -34,7 +37,7 @@ export interface Order {
     full_name: string;
     email: string;
   };
-  items: OrderItem[];
+  items: CartProduct[];
   subtotal: number;
   tax: number;
   shipping_fee: number;
@@ -45,12 +48,15 @@ export interface Order {
   created_at: string;
 }
 
-export interface OrderItem {
-  product_id: string;
+export interface CartProduct {
+  id: string;
   title: string;
-  quantity: number;
+  description: string;
   price: number;
-  subtotal: number;
+  total_quantity: number;
+  cateogry_id: string;
+  subcategory_id: string;
+  qunatity_in_cart: number;
 }
 
 export interface ShippingInfo {

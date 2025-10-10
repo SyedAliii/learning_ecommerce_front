@@ -48,10 +48,10 @@ const AdminProductFormPage = () => {
       title: product.title,
       description: product.description,
       price: product.price,
-      stock: product.stock,
-      category: product.category,
-      sub_category: product.sub_category,
-      image_urls: product.image_urls.join(', '),
+      stock: product.quantity,
+      category: product.category_id,
+      sub_category: product.subcategory_id,
+      image_urls: product.product_img_urls.join(', '),
     } : undefined,
   });
 

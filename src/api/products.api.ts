@@ -4,12 +4,14 @@ import { Product } from '@/types';
 export const productsApi = {
   getAll: async () => {
     const response = await apiClient.get<Product[]>('/v1/get_all_products');
-    return response.data;
+    const products: Product[] = response.data["products"];
+    return products;
   },
 
-  getSingle: async (productId: string) => {
-    const response = await apiClient.get<Product>(`/v1/get_single_product/${productId}`);
-    return response.data;
+  getSingle: async (categorySlug: string, subCategorySlug: string, title: string, productId: string) => {
+    const response = await apiClient.get<Product>(`/v1/get_single_product/${categorySlug}/${subCategorySlug}/${title}/${productId}`);
+    const product: Product = response.data["product"];
+    return product;
   },
 
   search: async (query: string) => {

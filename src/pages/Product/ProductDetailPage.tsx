@@ -11,9 +11,10 @@ import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { ShoppingCart, Share2, Heart } from 'lucide-react';
 import { toast } from 'sonner';
+import { sub } from 'date-fns';
 
 const ProductDetailPage = () => {
-  const { productId } = useParams<{ productId: string }>();
+  const { categorySlug, subCategorySlug, title, productId } = useParams<{ categorySlug: string; subCategorySlug: string; title: string; productId: string }>();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -22,7 +23,10 @@ const ProductDetailPage = () => {
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', productId],
-    queryFn: () => productsApi.getSingle(productId!),
+    queryFn: async () => {
+      const response = await productsApi.getSingle(categorySlug!, subCategorySlug!, title!, productId!);
+      return response;
+    },
     enabled: !!productId,
   });
 
@@ -34,7 +38,7 @@ const ProductDetailPage = () => {
       quantity,
       price: product.price,
       title: product.title,
-      image: product.image_urls[0] || '',
+      image: product.product_img_urls[0] || '',
     });
     toast.success('Added to cart!');
   };
@@ -104,14 +108,15 @@ const ProductDetailPage = () => {
           <div className="space-y-4">
             <div className="aspect-square rounded-xl overflow-hidden border bg-muted">
               <img
-                src={product.image_urls[selectedImage] || '/placeholder.svg'}
+                src={product.product_img_urls[0] || '/placeholder.svg'}
                 alt={product.title}
                 className="w-full h-full object-cover"
               />
             </div>
-            {product.image_urls.length > 1 && (
+            {
+            product.product_img_urls.length > 1 && (
               <div className="grid grid-cols-4 gap-4">
-                {product.image_urls.map((image, index) => (
+                {product.product_img_urls.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
@@ -134,9 +139,9 @@ const ProductDetailPage = () => {
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
-                <span>{product.category}</span>
+                <span>{product.category_id}</span>
                 <span>›</span>
-                <span>{product.sub_category}</span>
+                <span>{product.subcategory_id}</span>
               </div>
               <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
               <p className="text-muted-foreground">{product.description}</p>
@@ -144,8 +149,8 @@ const ProductDetailPage = () => {
 
             <div className="flex items-center gap-4">
               <span className="text-4xl font-bold">${product.price.toFixed(2)}</span>
-              {product.stock > 0 ? (
-                <Badge variant="secondary">In Stock ({product.stock} available)</Badge>
+              {product.quantity > 0 ? (
+                <Badge variant="secondary">In Stock ({product.quantity} available)</Badge>
               ) : (
                 <Badge variant="destructive">Out of Stock</Badge>
               )}
@@ -157,7 +162,7 @@ const ProductDetailPage = () => {
                 <QuantitySelector
                   quantity={quantity}
                   onQuantityChange={setQuantity}
-                  max={product.stock}
+                  max={product.quantity}
                 />
               </div>
 
@@ -166,7 +171,7 @@ const ProductDetailPage = () => {
                   size="lg"
                   className="flex-1"
                   onClick={handleAddToCart}
-                  disabled={product.stock === 0}
+                  disabled={product.quantity === 0}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Add to Cart
@@ -176,7 +181,7 @@ const ProductDetailPage = () => {
                   variant="default"
                   className="flex-1"
                   onClick={handleBuyNow}
-                  disabled={product.stock === 0}
+                  disabled={product.quantity === 0}
                 >
                   Buy Now
                 </Button>

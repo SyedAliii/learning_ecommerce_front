@@ -190,10 +190,10 @@ const AdminOrderDetailPage = () => {
                         <div>
                           <p className="font-medium">{item.title}</p>
                           <p className="text-sm text-muted-foreground">
-                            ${item.price.toFixed(2)} × {item.quantity}
+                            ${item.price.toFixed(2)} × {item.total_quantity}
                           </p>
                         </div>
-                        <p className="font-semibold">${item.subtotal.toFixed(2)}</p>
+                        <p className="font-semibold">${item.qunatity_in_cart.toFixed(2)}</p>
                       </div>
                     ))}
                   </div>
