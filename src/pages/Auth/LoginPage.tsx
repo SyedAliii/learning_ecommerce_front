@@ -6,14 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/stores/authStore';
+import { useCartStore } from '@/stores/cartStore';
 import { usersApi } from '@/api/users.api';
 import { toast } from 'sonner';
+import { clear } from 'console';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { setAuth } = useAuthStore();
+  const { setItems, clearCart } = useCartStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,6 +26,8 @@ const LoginPage = () => {
     try {
       const response = await usersApi.login(email, password);
       setAuth(response.user, response.access_token);
+      clearCart();
+      setItems(response.user.cart_products);
       toast.success('Welcome back!');
       navigate('/');
     } catch (error: any) {

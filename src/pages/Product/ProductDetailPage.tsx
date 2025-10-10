@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { QuantitySelector } from '@/components/ui/quantity-selector';
 import { productsApi } from '@/api/products.api';
 import { usersApi } from '@/api/users.api';
+import { cartApi } from '@/api/cart.api'; 
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { ShoppingCart, Share2, Heart } from 'lucide-react';
@@ -31,32 +32,37 @@ const ProductDetailPage = () => {
     enabled: !!productId,
   });
 
+  const addToCartMutation = useMutation({
+    mutationKey: ['product', productId],
+    mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
+      return await cartApi.addToCart(productId, quantity);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to sync with cart');
+    },
+  });
+
   const handleAddToCart = () => {
     if (!product) return;
-    
+
     addItem({
-      product_id: product.id,
-      quantity,
-      price: product.price,
+      id: product.id,
       title: product.title,
-      image: product.product_img_urls[0] || '',
+      description: product.description,
+      price: product.price,
+      total_quantity: product.quantity,
+      category_id: product.category_id,
+      subcategory_id: product.subcategory_id,
+      quantity_in_cart: quantity,
+      image_url: product.product_img_urls?.[0] || '',
     });
 
     if (isAuthenticated) {
-      setIsLoading(true);
-      
-      try {
-        const response = await usersApi.login(email, password);
-        setAuth(response.user, response.access_token);
-        toast.success('Welcome back!');
-        navigate('/');
-      } catch (error: any) {
-        toast.error(error.response?.data?.message || 'Invalid email or password');
-      } finally {
-        setIsLoading(false);
-      }
+      addToCartMutation.mutate({ productId: product.id, quantity });
+      toast.success('Added to Server Cart!');
+    } else {
+      toast.success('Added to cart!');
     }
-    toast.success('Added to cart!');
   };
 
   const handleBuyNow = () => {
@@ -177,7 +183,9 @@ const ProductDetailPage = () => {
                 <span className="font-medium">Quantity:</span>
                 <QuantitySelector
                   quantity={quantity}
-                  onQuantityChange={setQuantity}
+                  onQuantityChange={(behavior, current_qty) => {
+                      setQuantity(current_qty);
+                    }}
                   max={product.quantity}
                 />
               </div>

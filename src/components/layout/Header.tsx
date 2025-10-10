@@ -13,12 +13,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { UserRole } from '@/types';
 
 export const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { getItemCount } = useCartStore();
+  const { getItemCount, clearCart } = useCartStore();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +30,7 @@ export const Header = () => {
 
   const handleLogout = () => {
     logout();
+    clearCart();
     navigate('/');
   };
 
@@ -100,7 +102,7 @@ export const Header = () => {
                   <DropdownMenuItem onClick={() => navigate('/profile/orders')}>
                     My Orders
                   </DropdownMenuItem>
-                  {user.role === 'shop_owner' && (
+                  {user.role === UserRole.Admin && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => navigate('/admin')}>

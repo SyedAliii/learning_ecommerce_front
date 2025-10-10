@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { CartItem } from '@/types';
+import { CartProduct } from '@/types';
 
 interface CartState {
-  items: CartItem[];
-  addItem: (item: CartItem) => void;
+  items: CartProduct[];
+  setItems: (items: CartProduct[]) => void;
+  addItem: (item: CartProduct) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -16,38 +17,48 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      setItems: (cart_products: CartProduct[]) => {
+        set({ items: cart_products });
+      },
       addItem: (item) =>
         set((state) => {
-          const existingItem = state.items.find((i) => i.product_id === item.product_id);
+          const existingItem = state.items.find((i) => i.id === item.id);
           if (existingItem) {
             return {
               items: state.items.map((i) =>
-                i.product_id === item.product_id
-                  ? { ...i, quantity: i.quantity + item.quantity }
+                i.id === item.id
+                  ? { ...i, quantity_in_cart: i.quantity_in_cart + item.quantity_in_cart }
                   : i
               ),
             };
           }
           return { items: [...state.items, item] };
         }),
-      removeItem: (productId) =>
-        set((state) => ({
-          items: state.items.filter((item) => item.product_id !== productId),
-        })),
-      updateQuantity: (productId, quantity) =>
-        set((state) => ({
-          items: state.items.map((item) =>
-            item.product_id === productId ? { ...item, quantity } : item
-          ),
-        })),
-      clearCart: () => set({ items: [] }),
+      removeItem: (productId) => {
+        console.log('Removing item:', productId);
+        return set((state) => ({
+          items: state.items.filter((item) => item.id !== productId),
+        }));
+      },
+      updateQuantity: (productId, quantity) => {
+        console.log('Updating quantity:', productId, quantity);
+        return set((state) => ({
+          items: state.items.map((item) => {
+            return item.id === productId ? { ...item, quantity_in_cart: quantity } : item;
+          }),
+        }));
+      },
+      clearCart: () => {
+        console.log('Clearing cart');
+        return set({ items: [] });
+      },
       getTotal: () => {
         const state = get();
-        return state.items.reduce((total, item) => total + item.price * item.quantity, 0);
+        return state.items.reduce((total, item) => total + item.price * item.quantity_in_cart, 0);
       },
       getItemCount: () => {
         const state = get();
-        return state.items.reduce((count, item) => count + item.quantity, 0);
+        return state.items.reduce((count, item) => count + item.quantity_in_cart, 0);
       },
     }),
     {

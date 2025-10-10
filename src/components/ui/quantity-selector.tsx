@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { Button } from './button';
 
 interface QuantitySelectorProps {
   quantity: number;
-  onQuantityChange: (quantity: number) => void;
+  onQuantityChange: (behaviour: boolean, quantity: number) => void;
   max?: number;
   min?: number;
 }
@@ -14,15 +15,16 @@ export const QuantitySelector = ({
   max = 99,
   min = 1,
 }: QuantitySelectorProps) => {
+
   const handleDecrease = () => {
     if (quantity > min) {
-      onQuantityChange(quantity - 1);
+      onQuantityChange(false, quantity - 1);
     }
   };
 
   const handleIncrease = () => {
     if (quantity < max) {
-      onQuantityChange(quantity + 1);
+      onQuantityChange(true, quantity + 1);
     }
   };
 

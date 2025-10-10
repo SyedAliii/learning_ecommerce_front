@@ -1,4 +1,7 @@
-export type UserRole = 'admin' | 'user';
+export enum UserRole {
+  Admin = "admin",
+  User = "user",
+}
 
 export interface Product {
   id: string;
@@ -12,20 +15,12 @@ export interface Product {
   url_slug?: string;
 }
 
-export interface CartItem {
-  product_id: string;
-  quantity: number;
-  price: number;
-  title: string;
-  image: string;
-}
-
 export interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
-  items: CartProduct[];
+  cart_products: CartProduct[];
   status_code: number;
   msg: string;
 }
@@ -54,9 +49,10 @@ export interface CartProduct {
   description: string;
   price: number;
   total_quantity: number;
-  cateogry_id: string;
+  category_id: string;
   subcategory_id: string;
-  qunatity_in_cart: number;
+  quantity_in_cart: number;
+  image_url: string;
 }
 
 export interface ShippingInfo {

@@ -7,6 +7,8 @@ import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Trash2, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { cartApi } from '@/api/cart.api';
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -20,6 +22,74 @@ const CartPage = () => {
       return;
     }
     navigate('/checkout');
+  };
+
+  const addToCartMutation = useMutation({
+    mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
+      return await cartApi.addToCart(productId, quantity);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Add To Cart: Failed to sync with server cart');
+    },
+  });
+
+  const removeFromCartMutation = useMutation({
+    mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
+      return await cartApi.removeFromCart(productId, quantity);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Remove From Cart: Failed to sync with server cart');
+    },
+  });
+
+  const deleteCartMutation = useMutation({
+    mutationFn: async () => {
+      return await cartApi.clearCart();
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to delete cart on server');
+    },
+  });
+
+  const handleAddToCart = (product_id, changeQuantity, current_qty) => {
+    if (isAuthenticated) {
+      updateQuantity(product_id, current_qty);
+      addToCartMutation.mutate({ productId: product_id, quantity: changeQuantity });
+      toast.success('Added to Server Cart!');
+    } else {
+      updateQuantity(product_id, current_qty);
+      toast.success('Added to cart!');
+    }
+  };
+
+  const handleRemoveFromCart = (product_id, changeQuantity, current_qty) => {
+    if (isAuthenticated) {
+      removeFromCartMutation.mutate({ productId: product_id, quantity: changeQuantity });
+      if (current_qty === 0) {
+        removeItem(product_id);
+      } else {
+        updateQuantity(product_id, current_qty);
+      }
+      toast.success('Removed from Server Cart!');
+    } else {
+      if (current_qty === 0) {
+        removeItem(product_id);
+      } else {
+        updateQuantity(product_id, current_qty);
+      }
+      toast.success('Removed from cart!');
+    }
+  };
+
+  const handleDeleteCart = () => {
+    if (isAuthenticated) {
+      deleteCartMutation.mutate();
+      clearCart();
+      toast.success('Deleted Server Cart!');
+    } else {
+      clearCart();
+      toast.success('Deleted cart!');
+    }
   };
 
   const subtotal = getTotal();
@@ -56,7 +126,7 @@ const CartPage = () => {
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-3xl font-bold">Shopping Cart</h1>
-          <Button variant="outline" onClick={clearCart}>
+          <Button variant="outline" onClick={handleDeleteCart}>
             Clear Cart
           </Button>
         </div>
@@ -66,12 +136,12 @@ const CartPage = () => {
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
               <div
-                key={item.product_id}
+                key={item.id}
                 className="flex gap-4 p-4 rounded-lg border bg-card"
               >
                 <div className="h-24 w-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                   <img
-                    src={item.image || '/placeholder.svg'}
+                    src={item.image_url || '/placeholder.svg'}
                     alt={item.title}
                     className="h-full w-full object-cover"
                   />
@@ -82,16 +152,19 @@ const CartPage = () => {
                   <p className="text-lg font-bold mb-3">${item.price.toFixed(2)}</p>
                   <div className="flex items-center justify-between">
                     <QuantitySelector
-                      quantity={item.quantity}
-                      onQuantityChange={(qty) => updateQuantity(item.product_id, qty)}
+                      quantity={item.quantity_in_cart}
+                      onQuantityChange={(behavior, current_qty) => {
+                        if (behavior) {
+                          handleAddToCart(item.id, 1, current_qty);
+                        } else {
+                          handleRemoveFromCart(item.id, 1, current_qty);
+                        }
+                      }}
                     />
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => {
-                        removeItem(item.product_id);
-                        toast.success('Item removed from cart');
-                      }}
+                      onClick={() => handleRemoveFromCart(item.id, 0, 0)}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>

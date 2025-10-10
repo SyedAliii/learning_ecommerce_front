@@ -19,17 +19,17 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     ? product.product_img_urls[0]
     : '/placeholder.svg';
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    addItem({
-      product_id: product.id,
-      quantity: 1,
-      price: product.price,
-      title: product.title,
-      image: imageSrc,
-    });
-    toast.success('Added to cart!');
-  };
+  // const handleAddToCart = (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   addItem({
+  //     id: product.id,
+  //     quantity_in_cart: 1,
+  //     price: product.price,
+  //     title: product.title,
+  //     image_url: imageSrc,
+  //   });
+  //   toast.success('Added to cart!');
+  // };
 
   const productUrl = product.url_slug;
 
@@ -65,7 +65,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </p>
           <div className="flex items-center justify-between">
             <span className="text-2xl font-bold">${product.price.toFixed(2)}</span>
-            <Button
+            {/* <Button
               size="icon"
               variant="default"
               onClick={handleAddToCart}
@@ -73,7 +73,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               className="rounded-full"
             >
               <ShoppingCart className="h-4 w-4" />
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>
