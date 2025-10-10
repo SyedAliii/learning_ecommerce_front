@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { QuantitySelector } from '@/components/ui/quantity-selector';
 import { productsApi } from '@/api/products.api';
+import { usersApi } from '@/api/users.api';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { ShoppingCart, Share2, Heart } from 'lucide-react';
@@ -40,6 +41,21 @@ const ProductDetailPage = () => {
       title: product.title,
       image: product.product_img_urls[0] || '',
     });
+
+    if (isAuthenticated) {
+      setIsLoading(true);
+      
+      try {
+        const response = await usersApi.login(email, password);
+        setAuth(response.user, response.access_token);
+        toast.success('Welcome back!');
+        navigate('/');
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Invalid email or password');
+      } finally {
+        setIsLoading(false);
+      }
+    }
     toast.success('Added to cart!');
   };
 
