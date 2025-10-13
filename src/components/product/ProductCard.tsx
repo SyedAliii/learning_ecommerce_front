@@ -34,7 +34,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const productUrl = product.url_slug;
 
   return (
-    <Link to={productUrl} className="group block">
+    <Link to={productUrl?.startsWith('/') ? productUrl : `/${productUrl}`} className="group block">
       <div className="relative overflow-hidden rounded-xl border bg-card transition-all hover:shadow-lg hover-lift">
         {/* Image */}
         <div className="aspect-square overflow-hidden bg-muted">

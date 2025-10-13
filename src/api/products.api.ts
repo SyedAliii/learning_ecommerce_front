@@ -18,6 +18,6 @@ export const productsApi = {
     const response = await apiClient.get<Product[]>('/v1/search', {
       params: { query },
     });
-    return response.data;
+    return response.data["products"];
   },
 };
