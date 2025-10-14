@@ -12,10 +12,10 @@ export const orderApi = {
     return response.data;
   },
 
-  getUserOrders: async () => {
-    const response = await apiClient.get<Order[]>('/v1/get_user_orders');
-    return response.data;
-  },
+  // getUserOrders: async () => {
+  //   const response = await apiClient.get<Order[]>('/v1/get_user_orders');
+  //   return response.data;
+  // },
 
   getAllOrders: async () => {
     const response = await apiClient.get('/v1/get_all_orders');
@@ -30,5 +30,15 @@ export const orderApi = {
       total_price: order.total_price,
       status: order.status as OrderStatus,
     }));
+  },
+
+  shippedOrder: async (user_id: number, cart_id: number) => {
+    const response = await apiClient.post('/v1/shipped_order', { user_id, cart_id });
+    return response.data;
+  },
+
+  deliveredOrder: async (user_id: number, cart_id: number) => {
+    const response = await apiClient.post('/v1/delivered_order', { user_id, cart_id });
+    return response.data;
   },
 };

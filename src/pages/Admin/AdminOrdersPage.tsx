@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AdminSidebar } from '@/components/layout/AdminSidebar';
@@ -11,12 +11,23 @@ import { ROUTES } from '@/constants/routes';
 import { Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { orderApi } from '@/api/order.api';
-import { Order } from '@/types';
+import { Order, UserRole } from '@/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { toast } from '@/hooks/use-toast';
+import { useAuthStore } from '@/stores/authStore';
 
 const AdminOrdersPage = () => {
+  const queryClient = useQueryClient();
+  const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [ordersList, setOrdersList] = useState<Order[]>([]);
+
+  useEffect(() => {
+      if (!isAuthenticated || user?.role !== UserRole.Admin) {
+        navigate('/auth/login');
+      }
+  }, [isAuthenticated, user, navigate]);
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-orders'],
@@ -46,19 +57,65 @@ const AdminOrdersPage = () => {
     }
   };
 
+  const shippedOrderMutation = useMutation({
+    mutationFn: async ({ user_id, cart_id }: { user_id: number; cart_id: number }) => {
+      return await orderApi.shippedOrder(user_id, cart_id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast({
+        title: 'Success',
+        description: 'Order marked as shipped',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.response?.data["Generic Exception"] || 'Failed to mark order as shipped',
+      });
+    },
+  });
+
+  const deliveredOrderMutation = useMutation({
+    mutationFn: async ({ user_id, cart_id }: { user_id: number; cart_id: number }) => {
+      return await orderApi.deliveredOrder(user_id, cart_id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast({
+        title: 'Success',
+        description: 'Order marked as delivered',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.response?.data["Generic Exception"] || 'Failed to mark order as delivered',
+      });
+    },
+  });
+
   useEffect(() => {
     if (orders) {
       setOrdersList(orders);
     }
   }, [orders]);
 
+  function handleShippedOrder(user_id: number, cart_id: number): void {
+    shippedOrderMutation.mutate({ user_id, cart_id });
+  }
+
+  function handleDeliveredOrder(user_id: number, cart_id: number): void {
+    deliveredOrderMutation.mutate({ user_id, cart_id });
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      
+
       <div className="flex-1 flex">
         <AdminSidebar />
-        
+
         <main className="flex-1 container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-8">Orders Management</h1>
 
@@ -121,6 +178,22 @@ const AdminOrdersPage = () => {
                         <p className="text-sm font-medium mb-1">Total</p>
                         <p className="text-lg font-semibold">${order.total_price.toFixed(2)}</p>
                       </div>
+                    </div>
+                    <div className="flex justify-end gap-2 mt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleShippedOrder(order.user_id, order.cart_id)}
+                      >
+                        Mark Shipped
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeliveredOrder(order.user_id, order.cart_id)}
+                      >
+                        Mark Delivered
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
