@@ -3,6 +3,13 @@ export enum UserRole {
   User = "user",
 }
 
+export enum OrderStatus {
+  Pending = "Pending",
+  Confirmed = "Confirmed",
+  Shipped = "Shipped",
+  Delivered = "Delivered",
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -26,21 +33,14 @@ export interface User {
 }
 
 export interface Order {
-  id: string;
-  user_id: string;
-  user: {
-    full_name: string;
-    email: string;
-  };
-  items: CartProduct[];
-  subtotal: number;
-  tax: number;
-  shipping_fee: number;
-  total: number;
-  status: 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
-  payment_method: string;
-  shipping: ShippingInfo;
-  created_at: string;
+  id: number;
+  user_id: number;
+  username: string;
+  user_email: string;
+  cart_id: number;
+  total_items: number;
+  total_price: number;
+  status: OrderStatus;
 }
 
 export interface CartProduct {
@@ -66,14 +66,9 @@ export interface ShippingInfo {
 
 export interface Category {
   id: string;
-  name: string;
-  slug: string;
   subcategories: SubCategory[];
 }
 
 export interface SubCategory {
   id: string;
-  name: string;
-  slug: string;
-  category_id: string;
 }

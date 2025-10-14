@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Order } from '@/types';
+import { Order, OrderStatus } from '@/types';
 
 export const orderApi = {
   createOrder: async (orderData: any) => {
@@ -15,5 +15,20 @@ export const orderApi = {
   getUserOrders: async () => {
     const response = await apiClient.get<Order[]>('/v1/get_user_orders');
     return response.data;
+  },
+
+  getAllOrders: async () => {
+    const response = await apiClient.get('/v1/get_all_orders');
+    const orders = response.data["orders"];
+    return orders.map((order: any): Order => ({
+      id: order.id,
+      user_id: order.user_id,
+      username: order.username,
+      user_email: order.user_email,
+      cart_id: order.cart_id,
+      total_items: order.total_items,
+      total_price: order.total_price,
+      status: order.status as OrderStatus,
+    }));
   },
 };

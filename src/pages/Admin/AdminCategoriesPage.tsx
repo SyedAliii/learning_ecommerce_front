@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -11,47 +11,37 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Trash2, Edit } from 'lucide-react';
+import { productsApi } from '@/api/products.api';
+import { useAuthStore } from '@/stores/authStore';
+import { UserRole } from '@/types';
+import { useNavigate } from 'react-router-dom';
+import { set } from 'date-fns';
 
 const AdminCategoriesPage = () => {
   const queryClient = useQueryClient();
+  const { user, isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [categoryName, setCategoryName] = useState('');
-  const [categorySlug, setCategorySlug] = useState('');
+  const [subcategory, setSubcategory] = useState('');
+  const [categoriesList, setCategoriesList] = useState<any[]>([]);
 
-  // TODO: Replace with actual API calls
+  useEffect(() => {
+    if (!isAuthenticated || user?.role !== UserRole.Admin) {
+      navigate('/auth/login');
+    }
+  }, [isAuthenticated, user, navigate]);
+
   const { data: categories, isLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: async () => {
-      // Mock data
-      return [
-        {
-          id: '1',
-          name: 'Electronics',
-          slug: 'electronics',
-          subcategories: [
-            { id: '1-1', name: 'Phones', slug: 'phones', category_id: '1' },
-            { id: '1-2', name: 'Laptops', slug: 'laptops', category_id: '1' },
-          ],
-        },
-        {
-          id: '2',
-          name: 'Clothing',
-          slug: 'clothing',
-          subcategories: [
-            { id: '2-1', name: 'Men', slug: 'men', category_id: '2' },
-            { id: '2-2', name: 'Women', slug: 'women', category_id: '2' },
-          ],
-        },
-      ];
-    },
+    queryFn: productsApi.getAllCategoriesSubcategories,
   });
 
   const createCategoryMutation = useMutation({
-    mutationFn: async (data: any) => {
-      // TODO: Implement API call
-      console.log('Creating category:', data);
-      return data;
+    mutationFn: async ({ categoryName, subcategories }: { categoryName: string, subcategories: string }) => {
+      const subcategoriesArray = subcategories.split(',').map((sub) => sub.trim());
+      return await productsApi.addCategory(categoryName, subcategoriesArray);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
@@ -61,15 +51,42 @@ const AdminCategoriesPage = () => {
       });
       setIsDialogOpen(false);
       setCategoryName('');
-      setCategorySlug('');
+      setSubcategory('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.response?.data["Generic Exception"] || 'Failed to create category',
+      });
+    },
+  });
+
+  const editCategoryMutation = useMutation({
+    mutationFn: async ({ categoryName, subcategories }: { categoryName: string, subcategories: string }) => {
+      const subcategoriesArray = subcategories.split(',').map((sub) => sub.trim());
+      return await productsApi.editCategory(categoryName, subcategoriesArray);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast({
+        title: 'Success',
+        description: 'Category edited successfully',
+      });
+      setIsDialogOpen(false);
+      setCategoryName('');
+      setSubcategory('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.response?.data["Generic Exception"] || 'Failed to edit category',
+      });
     },
   });
 
   const deleteCategoryMutation = useMutation({
     mutationFn: async (categoryId: string) => {
-      // TODO: Implement API call
-      console.log('Deleting category:', categoryId);
-      return categoryId;
+      return await productsApi.deleteCategory(categoryId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
@@ -78,30 +95,58 @@ const AdminCategoriesPage = () => {
         description: 'Category deleted successfully',
       });
     },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.response?.data["Generic Exception"] || 'Failed to delete category',
+      });
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createCategoryMutation.mutate({
-      name: categoryName,
-      slug: categorySlug,
-    });
+    if (editingCategory) {
+      editCategoryMutation.mutate({
+        categoryName: categoryName,
+        subcategories: subcategory,
+      });
+    } else {
+      setEditingCategory(null);
+      createCategoryMutation.mutate({
+        categoryName: categoryName,
+        subcategories: subcategory,
+      })
+    };
   };
+
+  const handleDelete = (category: string) => {
+    deleteCategoryMutation.mutate(category);
+  };
+
+  useEffect(() => {
+    if (categories) {
+      setCategoriesList(categories);
+    }
+  }, [categories]);
 
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      
+
       <div className="flex-1 flex">
         <AdminSidebar />
-        
+
         <main className="flex-1 container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold">Categories</h1>
-            
+
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button onClick={() => {
+                            setEditingCategory(null);
+                            setCategoryName('');
+                            setSubcategory('');
+                          }}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Category
                 </Button>
@@ -123,11 +168,11 @@ const AdminCategoriesPage = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="slug">Slug</Label>
+                    <Label htmlFor="subcategory">SubCategory (Enter multiple subcategories separated by commas)</Label>
                     <Input
-                      id="slug"
-                      value={categorySlug}
-                      onChange={(e) => setCategorySlug(e.target.value)}
+                      id="subcategory"
+                      value={subcategory}
+                      onChange={(e) => setSubcategory(e.target.value)}
                       required
                     />
                   </div>
@@ -158,15 +203,15 @@ const AdminCategoriesPage = () => {
                 <Card key={category.id}>
                   <CardHeader>
                     <div className="flex justify-between items-center">
-                      <CardTitle>{category.name}</CardTitle>
+                      <CardTitle>{category.id}</CardTitle>
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
                           size="icon"
                           onClick={() => {
                             setEditingCategory(category);
-                            setCategoryName(category.name);
-                            setCategorySlug(category.slug);
+                            setCategoryName(category.id);
+                            setSubcategory(category.subcategories.map((sub) => sub.id).join(", "));
                             setIsDialogOpen(true);
                           }}
                         >
@@ -175,7 +220,7 @@ const AdminCategoriesPage = () => {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => deleteCategoryMutation.mutate(category.id)}
+                          onClick={() => handleDelete(category.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -184,14 +229,11 @@ const AdminCategoriesPage = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Slug: <code className="text-xs bg-muted px-2 py-1 rounded">{category.slug}</code>
-                      </p>
                       <div className="flex flex-wrap gap-2">
                         <span className="text-sm font-medium">Subcategories:</span>
                         {category.subcategories.map((sub) => (
                           <Badge key={sub.id} variant="secondary">
-                            {sub.name}
+                            {sub.id}
                           </Badge>
                         ))}
                       </div>

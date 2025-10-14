@@ -5,17 +5,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { productsApi } from '@/api/products.api';
 import { Edit, Trash2, Search } from 'lucide-react';
+import { Product, UserRole } from '@/types';
+import { toast } from '@/components/ui/sonner';
 
 const AdminProductsListPage = () => {
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'shop_owner') {
+    if (!isAuthenticated || user?.role !== UserRole.Admin) {
       navigate('/auth/login');
     }
   }, [isAuthenticated, user, navigate]);
@@ -25,14 +28,37 @@ const AdminProductsListPage = () => {
     queryFn: productsApi.getAll,
   });
 
-  const filteredProducts = products?.filter((product) =>
-    product.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    if (products) {
+      setFilteredProducts(
+        products.filter((product) =>
+          product.title.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+    }
+  }, [products, searchQuery]);
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      return await productsApi.deleteProduct(productId);
+    },
+    onSuccess: (message: string, productId: string) => {
+      setFilteredProducts((prev) => prev.filter(p => p.id !== productId));
+      toast.success(message || 'Product deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Delete Product: Failed to sync with server cart');
+    },
+  });
+
+  function handleDelete(id: string): void {
+    deleteProductMutation.mutate(id);
+  }
 
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      
+
       <div className="flex-1 bg-background">
         <header className="border-b bg-card">
           <div className="flex h-16 items-center justify-between px-6">
@@ -84,14 +110,14 @@ const AdminProductsListPage = () => {
                       <tr key={product.id} className="hover:bg-muted/50">
                         <td className="px-4 py-3">
                           <img
-                            src={product.image_urls[0] || '/placeholder.svg'}
+                            src={product.product_img_urls[0] || '/placeholder.svg'}
                             alt={product.title}
                             className="h-12 w-12 rounded-lg object-cover"
                           />
                         </td>
                         <td className="px-4 py-3 font-medium">{product.title}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {product.category_id} › {product.sub_category_id}
+                          {product.category_id} › {product.subcategory_id}
                         </td>
                         <td className="px-4 py-3 text-right font-medium">
                           ${product.price.toFixed(2)}
@@ -112,7 +138,7 @@ const AdminProductsListPage = () => {
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button size="sm" variant="destructive">
+                            <Button size="sm" variant="destructive" onClick={() => handleDelete(product.id)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>

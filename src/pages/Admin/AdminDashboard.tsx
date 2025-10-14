@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/authStore';
 import { useEffect } from 'react';
 import { Package, ShoppingBag, DollarSign, Users } from 'lucide-react';
+import { UserRole } from '@/types';
 
 const AdminDashboard = () => {
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'shop_owner') {
+    if (!isAuthenticated || user?.role !== UserRole.Admin) {
       navigate('/auth/login');
     }
   }, [isAuthenticated, user, navigate]);
