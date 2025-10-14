@@ -16,32 +16,32 @@ const AdminDashboard = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const stats = [
-    {
-      title: 'Total Products',
-      value: '156',
-      icon: Package,
-      color: 'text-blue-600',
-    },
-    {
-      title: 'Total Orders',
-      value: '89',
-      icon: ShoppingBag,
-      color: 'text-green-600',
-    },
-    {
-      title: 'Revenue',
-      value: '$12,450',
-      icon: DollarSign,
-      color: 'text-purple-600',
-    },
-    {
-      title: 'Customers',
-      value: '234',
-      icon: Users,
-      color: 'text-orange-600',
-    },
-  ];
+  // const stats = [
+  //   {
+  //     title: 'Total Products',
+  //     value: '156',
+  //     icon: Package,
+  //     color: 'text-blue-600',
+  //   },
+  //   {
+  //     title: 'Total Orders',
+  //     value: '89',
+  //     icon: ShoppingBag,
+  //     color: 'text-green-600',
+  //   },
+  //   {
+  //     title: 'Revenue',
+  //     value: '$12,450',
+  //     icon: DollarSign,
+  //     color: 'text-purple-600',
+  //   },
+  //   {
+  //     title: 'Customers',
+  //     value: '234',
+  //     icon: Users,
+  //     color: 'text-orange-600',
+  //   },
+  // ];
 
   return (
     <div className="flex min-h-screen">
@@ -59,7 +59,7 @@ const AdminDashboard = () => {
 
         <main className="p-6">
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {stats.map((stat) => {
               const Icon = stat.icon;
               return (
@@ -74,13 +74,13 @@ const AdminDashboard = () => {
                 </div>
               );
             })}
-          </div>
+          </div> */}
 
           {/* Quick Actions */}
           <div className="rounded-xl border bg-card p-6 mb-8">
             <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
             <div className="flex flex-wrap gap-3">
-              <Button onClick={() => navigate('/admin/products/new')}>
+              <Button onClick={() => navigate('/admin/products')}>
                 Add Product
               </Button>
               <Button variant="outline" onClick={() => navigate('/admin/orders')}>
@@ -93,7 +93,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Recent Activity */}
-          <div className="rounded-xl border bg-card p-6">
+          {/* <div className="rounded-xl border bg-card p-6">
             <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
             <div className="space-y-4">
               <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
@@ -118,7 +118,7 @@ const AdminDashboard = () => {
                 <span className="text-sm text-muted-foreground">5h ago</span>
               </div>
             </div>
-          </div>
+          </div> */}
         </main>
       </div>
     </div>

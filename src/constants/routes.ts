@@ -20,7 +20,7 @@ export const ROUTES = {
   ADMIN_DASHBOARD: '/admin',
   ADMIN_PRODUCTS: '/admin/products',
   ADMIN_PRODUCT_NEW: '/admin/products/new',
-  ADMIN_PRODUCT_EDIT: '/admin/products/:productId/edit',
+  ADMIN_PRODUCT_EDIT: '/admin/products/:categorySlug/:subCategorySlug/:title/:productId/edit',
   ADMIN_CATEGORIES: '/admin/categories',
   ADMIN_ORDERS: '/admin/orders',
   ADMIN_ORDER_DETAIL: '/admin/orders/:orderId',

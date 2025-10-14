@@ -96,12 +96,12 @@ export const Header = () => {
                     <div className="text-muted-foreground text-xs">{user.email}</div>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  {/* <DropdownMenuItem onClick={() => navigate('/profile')}>
                     Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/profile/orders')}>
                     My Orders
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                   {user.role === UserRole.Admin && (
                     <>
                       <DropdownMenuSeparator />

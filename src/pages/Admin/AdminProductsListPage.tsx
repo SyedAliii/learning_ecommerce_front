@@ -16,12 +16,31 @@ const AdminProductsListPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [isMutating, setIsMutating] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== UserRole.Admin) {
       navigate('/auth/login');
     }
   }, [isAuthenticated, user, navigate]);
+
+  useEffect(() => {
+      if (isMutating) {
+        document.body.style.pointerEvents = 'none';
+        document.body.style.userSelect = 'none';
+        document.body.style.opacity = '0.6';
+      } else {
+        document.body.style.pointerEvents = '';
+        document.body.style.userSelect = '';
+        document.body.style.opacity = '';
+      }
+  
+      return () => {
+        document.body.style.pointerEvents = '';
+        document.body.style.userSelect = '';
+        document.body.style.opacity = '';
+      };
+    }, [isMutating]);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['admin-products'],
@@ -42,12 +61,17 @@ const AdminProductsListPage = () => {
     mutationFn: async (productId: string) => {
       return await productsApi.deleteProduct(productId);
     },
+    onMutate: () => {
+      setIsMutating(true);
+    },
     onSuccess: (message: string, productId: string) => {
       setFilteredProducts((prev) => prev.filter(p => p.id !== productId));
       toast.success(message || 'Product deleted successfully');
+      setIsMutating(false);
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Delete Product: Failed to sync with server cart');
+      setIsMutating(false);
     },
   });
 
@@ -134,7 +158,7 @@ const AdminProductsListPage = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => navigate(`/admin/products/${product.id}/edit`)}
+                              onClick={() => navigate(`/admin/products/${product.id}/edit`, { state: { product } })}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>

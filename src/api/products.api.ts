@@ -51,7 +51,7 @@ export const productsApi = {
     });
     return response.data;
   },
-  
+
   editCategory: async (category: string, subcategories: string[]) => {
     const response = await apiClient.post('/v1/edit_category', {
       category,
@@ -81,16 +81,49 @@ export const productsApi = {
     formData.append("quantity", stock.toString());
     formData.append("category_id", category);
     formData.append("subcategory_id", sub_category);
-    [...image_files].forEach((file: File) => {
-      formData.append("images", file, file.name);
+
+    Array.from(image_files || []).forEach((file) => {
+      formData.append("images", file);
     });
 
     const headers = {
-      "Accept": "application/json"
+      Accept: "application/json",
+      "Content-Type": "multipart/form-data",
     };
 
     const response = await apiClient.post('/v1/add_product', formData, { headers });
-    console.log("API Response:", response.data);                                              
+    console.log("API Response:", response.data);
+    return response.data["product"];
+  },
+
+  updateProduct: async (productId: string, updates: {
+    title?: string;
+    description?: string;
+    price?: number;
+    stock?: number;
+    category?: string;
+    sub_category?: string;
+    image_files?: File[];
+  }) => {
+    const body: any = { "id": productId };
+
+    if (updates.title) body.title = updates.title;
+    if (updates.description) body.description = updates.description;
+    if (updates.price !== undefined) body.price = updates.price;
+    if (updates.stock !== undefined) body.quantity = updates.stock;
+    if (updates.category) body.category_id = updates.category;
+    if (updates.sub_category) body.subcategory_id = updates.sub_category;
+
+    if (updates.image_files) {
+      body.images = updates.image_files;
+    }
+
+    const headers = {
+      Accept: "application/json",
+    };
+
+    const response = await apiClient.put(`/v1/update_product`, body, { headers });
+    console.log("API Response:", response.data);
     return response.data["product"];
   },
 
