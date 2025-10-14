@@ -82,7 +82,7 @@ const CheckoutPage = () => {
       });
       setTimeout(() => {
         confirmOrderMutation.mutate();
-      }, 2000);
+      }, 1000);
     },
     onError: () => {
       toast({
