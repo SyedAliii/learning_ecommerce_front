@@ -216,9 +216,9 @@ const ProductDetailPage = () => {
                   <Share2 className="mr-2 h-5 w-5" />
                   Share
                 </Button>
-                <Button variant="outline" size="icon">
+                {/* <Button variant="outline" size="icon">
                   <Heart className="h-5 w-5" />
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>

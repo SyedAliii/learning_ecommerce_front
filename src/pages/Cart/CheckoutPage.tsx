@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -48,15 +48,41 @@ const CheckoutPage = () => {
     },
   });
 
+  const confirmOrderMutation = useMutation({
+    mutationFn: async () => {
+      return await orderApi.confirmOrder();
+    },
+    onSuccess: (order) => {
+      clearCart();
+      toast({
+        title: 'Order Confirmed!',
+        description: `Your order is confirmed and being processed for shipping.`,
+      });
+      setIsProcessing(false);
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'Failed to confirm order. Please try again.',
+        variant: 'destructive',
+      });
+      setIsProcessing(false);
+    },
+  });
+
   const createOrderMutation = useMutation({
-    mutationFn: orderApi.createOrder,
+    mutationFn: async () => {
+      return await orderApi.createOrder();
+    },
     onSuccess: (order) => {
       clearCart();
       toast({
         title: 'Order placed successfully!',
-        description: `Your order #${order.id} has been confirmed.`,
+        description: `Your order is in pending state. Will confirm in a few seconds.`,
       });
-      navigate(ROUTES.ORDER_CONFIRMATION.replace(':orderId', order.id));
+      setTimeout(() => {
+        confirmOrderMutation.mutate();
+      }, 2000);
     },
     onError: () => {
       toast({
@@ -68,32 +94,24 @@ const CheckoutPage = () => {
     },
   });
 
-  const onSubmit = (data: CheckoutFormData) => {
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsProcessing(true);
     
     const orderData = {
       items: items.map(item => ({
-        product_id: item.product_id,
-        quantity: item.quantity,
+        product_id: item.id,
+        quantity: item.quantity_in_cart,
         price: item.price,
       })),
-      shipping: {
-        name: data.name,
-        address: data.address,
-        city: data.city,
-        zip: data.zip,
-        country: data.country,
-        phone: data.phone,
-      },
-      payment_method: data.paymentMethod,
     };
 
-    createOrderMutation.mutate(orderData);
+    createOrderMutation.mutate();
   };
 
   const subtotal = getTotal();
   const tax = subtotal * 0.1;
-  const shipping = subtotal > 100 ? 0 : 10;
+  const shipping = 50; // subtotal > 100 ? 0 : 10;
   const total = subtotal + tax + shipping;
 
   if (items.length === 0) {
@@ -120,9 +138,9 @@ const CheckoutPage = () => {
       <main className="flex-1 container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="grid lg:grid-cols-3 gap-8">
+        <form onSubmit={(e) => onSubmit(e)} className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Shipping Information</CardTitle>
               </CardHeader>
@@ -170,7 +188,7 @@ const CheckoutPage = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
             <Card>
               <CardHeader>
@@ -210,9 +228,9 @@ const CheckoutPage = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   {items.map((item) => (
-                    <div key={item.product_id} className="flex justify-between text-sm">
-                      <span>{item.title} × {item.quantity}</span>
-                      <span>${(item.price * item.quantity).toFixed(2)}</span>
+                    <div key={item.id} className="flex justify-between text-sm">
+                      <span>{item.title} × {item.quantity_in_cart}</span>
+                      <span>${(item.price * item.quantity_in_cart).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -228,7 +246,7 @@ const CheckoutPage = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping</span>
-                    <span>{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span>
+                    <span>{`$${shipping.toFixed(2)}`}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg border-t pt-2">
                     <span>Total</span>

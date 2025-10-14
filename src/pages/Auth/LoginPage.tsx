@@ -9,25 +9,43 @@ import { useAuthStore } from '@/stores/authStore';
 import { useCartStore } from '@/stores/cartStore';
 import { usersApi } from '@/api/users.api';
 import { toast } from 'sonner';
-import { clear } from 'console';
+import { cartApi } from '@/api/cart.api';
+import { useMutation } from '@tanstack/react-query';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { setAuth } = useAuthStore();
-  const { setItems, clearCart } = useCartStore();
+  const { setItems, getItems, getItemCount, clearCart } = useCartStore();
   const navigate = useNavigate();
+  
+  const addToCartMutation = useMutation({
+    mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
+      return await cartApi.addToCart(productId, quantity);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to sync with cart');
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const response = await usersApi.login(email, password);
       setAuth(response.user, response.access_token);
-      clearCart();
-      setItems(response.user.cart_products);
+      if (!response.user.cart_products || response.user.cart_products.length === 0) {
+        if (getItemCount() > 0) {
+          const localCartItems = getItems();
+          for (const item of localCartItems) {
+            await addToCartMutation.mutateAsync({ productId: item.id, quantity: item.quantity_in_cart });
+          }
+        }
+      } else {
+        clearCart();
+        setItems(response.user.cart_products);
+      }
       toast.success('Welcome back!');
       navigate('/');
     } catch (error: any) {

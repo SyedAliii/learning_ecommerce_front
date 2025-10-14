@@ -50,13 +50,13 @@ type ProductFormData = z.infer<typeof productSchema>;
 const AdminProductFormPage = () => {
   const location = useLocation();
   const state = location.state as { product: Product };
-  const product = state.product;
+  const product = state?.product;
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const isEdit = !!productId;
 
   const { watch } = useForm();
-  
+
   const [isMutating, setIsMutating] = useState(false);
 
   const { data: categories } = useQuery({

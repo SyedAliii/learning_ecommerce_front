@@ -2,8 +2,11 @@ import { apiClient } from './client';
 import { Order, OrderStatus } from '@/types';
 
 export const orderApi = {
-  createOrder: async (orderData: any) => {
-    const response = await apiClient.post<Order>('/v1/create_order', orderData);
+  createOrder: async () => {
+    const headers = {
+      Accept: "application/json",
+    };
+    const response = await apiClient.post('/v1/create_order', {}, { headers });
     return response.data;
   },
 
@@ -30,6 +33,11 @@ export const orderApi = {
       total_price: order.total_price,
       status: order.status as OrderStatus,
     }));
+  },
+
+  confirmOrder: async () => {
+    const response = await apiClient.post('/v1/confirm_order');
+    return response.data;
   },
 
   shippedOrder: async (user_id: number, cart_id: number) => {
