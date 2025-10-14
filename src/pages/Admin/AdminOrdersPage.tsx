@@ -57,11 +57,35 @@ const AdminOrdersPage = () => {
     }
   };
 
+  const [isMutating, setIsMutating] = useState(false);
+
+  useEffect(() => {
+    if (isMutating) {
+      document.body.style.pointerEvents = 'none';
+      document.body.style.userSelect = 'none';
+      document.body.style.opacity = '0.6';
+    } else {
+      document.body.style.pointerEvents = '';
+      document.body.style.userSelect = '';
+      document.body.style.opacity = '';
+    }
+
+    return () => {
+      document.body.style.pointerEvents = '';
+      document.body.style.userSelect = '';
+      document.body.style.opacity = '';
+    };
+  }, [isMutating]);
+
   const shippedOrderMutation = useMutation({
     mutationFn: async ({ user_id, cart_id }: { user_id: number; cart_id: number }) => {
       return await orderApi.shippedOrder(user_id, cart_id);
     },
+    onMutate: () => {
+      setIsMutating(true);
+    },
     onSuccess: () => {
+      setIsMutating(false);
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       toast({
         title: 'Success',
@@ -69,6 +93,7 @@ const AdminOrdersPage = () => {
       });
     },
     onError: (error: any) => {
+      setIsMutating(false);
       toast({
         title: 'Error',
         description: error.response?.data["Generic Exception"] || 'Failed to mark order as shipped',
@@ -80,7 +105,11 @@ const AdminOrdersPage = () => {
     mutationFn: async ({ user_id, cart_id }: { user_id: number; cart_id: number }) => {
       return await orderApi.deliveredOrder(user_id, cart_id);
     },
+    onMutate: () => {
+      setIsMutating(true);
+    },
     onSuccess: () => {
+      setIsMutating(false);
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       toast({
         title: 'Success',
@@ -88,6 +117,7 @@ const AdminOrdersPage = () => {
       });
     },
     onError: (error: any) => {
+      setIsMutating(false);
       toast({
         title: 'Error',
         description: error.response?.data["Generic Exception"] || 'Failed to mark order as delivered',
