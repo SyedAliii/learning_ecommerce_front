@@ -12,7 +12,7 @@ export const Footer = () => {
               <div className="h-8 w-8 rounded-lg bg-gradient-primary"></div>
               <span className="text-xl font-bold">ShopHub</span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground pl-10">
               Your one-stop shop for quality products at great prices.
             </p>
           </div>
@@ -40,7 +40,7 @@ export const Footer = () => {
           </div>
 
           {/* Customer Service */}
-          <div>
+          {/* <div>
             <h3 className="font-semibold mb-4">Customer Service</h3>
             <ul className="space-y-2 text-sm">
               <li>
@@ -59,7 +59,7 @@ export const Footer = () => {
                 </a>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Connect */}
           <div>

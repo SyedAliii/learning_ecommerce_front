@@ -130,7 +130,7 @@ const ProductDetailPage = () => {
           <div className="space-y-4">
             <div className="aspect-square rounded-xl overflow-hidden border bg-muted">
               <img
-                src={product.product_img_urls[0] || '/placeholder.svg'}
+                src={product.product_img_urls[selectedImage] || '/placeholder.svg'}
                 alt={product.title}
                 className="w-full h-full object-cover"
               />

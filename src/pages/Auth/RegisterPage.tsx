@@ -8,6 +8,9 @@ import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/stores/authStore';
 import { usersApi } from '@/api/users.api';
 import { toast } from 'sonner';
+import { useMutation } from '@tanstack/react-query';
+import { cartApi } from '@/api/cart.api';
+import { useCartStore } from '@/stores/cartStore';
 
 const RegisterPage = () => {
   const [name, setName] = useState('');
@@ -19,7 +22,17 @@ const RegisterPage = () => {
   const [country, setCountry] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { setAuth } = useAuthStore();
+  const { setItems, getItems, getItemCount, clearCart } = useCartStore();
   const navigate = useNavigate();
+
+  const addToCartMutation = useMutation({
+    mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
+      return await cartApi.addToCart(productId, quantity);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to sync with cart');
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +52,17 @@ const RegisterPage = () => {
     try {
       const response = await usersApi.register(name, email, password, address, city, country);
       setAuth(response.user, response.access_token);
+      if (!response.user.cart_products || response.user.cart_products.length === 0) {
+        if (getItemCount() > 0) {
+          const localCartItems = getItems();
+          for (const item of localCartItems) {
+            await addToCartMutation.mutateAsync({ productId: item.id, quantity: item.quantity_in_cart });
+          }
+        }
+      } else {
+        clearCart();
+        setItems(response.user.cart_products);
+      }
       toast.success('Account created successfully!');
       navigate('/');
     } catch (error: any) {
