@@ -57,7 +57,7 @@ const RegisterPage = () => {
           const localCartItems = getItems();
           for (const item of localCartItems) {
             await addToCartMutation.mutateAsync({ productId: item.id, quantity: item.quantity_in_cart });
-          }
+          } 
         }
       } else {
         clearCart();
