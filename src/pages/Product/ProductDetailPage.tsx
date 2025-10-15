@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
@@ -11,9 +11,9 @@ import { usersApi } from '@/api/users.api';
 import { cartApi } from '@/api/cart.api'; 
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useProductDirectWebSocket } from '@/hooks/use-product-websocket';
 import { ShoppingCart, Share2, Heart } from 'lucide-react';
 import { toast } from 'sonner';
-import { sub } from 'date-fns';
 
 const ProductDetailPage = () => {
   const { categorySlug, subCategorySlug, title, productId } = useParams<{ categorySlug: string; subCategorySlug: string; title: string; productId: string }>();
@@ -22,16 +22,26 @@ const ProductDetailPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
+  const [product, setProduct] = useState(null);
 
-  const { data: product, isLoading } = useQuery({
+  // Use the custom hook for WebSocket connection
+  const { wsState } = useProductDirectWebSocket({
+    productId,
+    onProductUpdate: (updatedProduct) => {
+      setProduct(updatedProduct);
+    },
+    enabled: !!productId
+  });
+
+  const { data: productRes, isLoading } = useQuery({
     queryKey: ['product', productId],
     queryFn: async () => {
       const response = await productsApi.getSingle(categorySlug!, subCategorySlug!, title!, productId!);
+      setProduct(response);
       return response;
     },
     enabled: !!productId,
   });
-
   const addToCartMutation = useMutation({
     mutationKey: ['product', productId],
     mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
@@ -41,7 +51,6 @@ const ProductDetailPage = () => {
       toast.error(error.response?.data?.message || 'Failed to sync with cart');
     },
   });
-
   const handleAddToCart = () => {
     if (!product) return;
 
@@ -64,7 +73,6 @@ const ProductDetailPage = () => {
       toast.success('Added to cart!');
     }
   };
-
   const handleBuyNow = () => {
     if (!isAuthenticated) {
       navigate('/auth/login');
@@ -73,7 +81,6 @@ const ProductDetailPage = () => {
     handleAddToCart();
     navigate('/checkout');
   };
-
   const handleShare = async () => {
     if (navigator.share) {
       await navigator.share({
@@ -85,7 +92,6 @@ const ProductDetailPage = () => {
       toast.success('Link copied to clipboard!');
     }
   };
-
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col">

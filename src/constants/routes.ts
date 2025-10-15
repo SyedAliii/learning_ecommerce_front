@@ -1,3 +1,6 @@
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'ws://localhost:8000';
+
 export const ROUTES = {
   HOME: '/',
   SEARCH: '/search',
@@ -26,5 +29,8 @@ export const ROUTES = {
   ADMIN_ORDER_DETAIL: '/admin/orders/:orderId',
 } as const;
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:8000';
+export const WEBSOCKET_ENDPOINTS = {
+  PRODUCT_UPDATE: (productId: string) => `/v1/ws/products/update/${productId}`,
+  ORDER_STATUS: (orderId: string) => `/v1/ws/orders/${orderId}`,
+  CART_SYNC: (userId: string) => `/v1/ws/cart/${userId}`,
+} as const;
