@@ -9,39 +9,6 @@ interface UseProductWebSocketProps {
   enabled?: boolean;
 }
 
-export function useProductWebSocket({ 
-  productId, 
-  onProductUpdate, 
-  enabled = true 
-}: UseProductWebSocketProps) {
-  const [wsState, setWsState] = useState<WebSocketState>('disconnected');
-  const cleanupRef = useRef<(() => void) | null>(null);
-
-  useEffect(() => {
-    if (!productId || !enabled) {
-      setWsState('disconnected');
-      return;
-    }
-
-    setWsState('connecting');
-
-    // Use the socket service for product updates
-    const cleanup = socketService.connectToProductUpdates(productId, onProductUpdate);
-    cleanupRef.current = cleanup;
-    setWsState('connected');
-
-    return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
-      }
-      setWsState('disconnected');
-    };
-  }, [productId, onProductUpdate, enabled]);
-
-  return { wsState };
-}
-
 export function useProductDirectWebSocket({ 
   productId, 
   onProductUpdate, 

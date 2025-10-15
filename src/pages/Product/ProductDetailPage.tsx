@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
@@ -24,12 +24,14 @@ const ProductDetailPage = () => {
   const { isAuthenticated } = useAuthStore();
   const [product, setProduct] = useState(null);
 
+  const onProductUpdate = useCallback((updatedProduct) => {
+    setProduct(updatedProduct);
+  }, []);
+
   // Use the custom hook for WebSocket connection
   const { wsState } = useProductDirectWebSocket({
     productId,
-    onProductUpdate: (updatedProduct) => {
-      setProduct(updatedProduct);
-    },
+    onProductUpdate,
     enabled: !!productId
   });
 

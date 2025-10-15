@@ -31,6 +31,4 @@ export const ROUTES = {
 
 export const WEBSOCKET_ENDPOINTS = {
   PRODUCT_UPDATE: (productId: string) => `/v1/ws/products/update/${productId}`,
-  ORDER_STATUS: (orderId: string) => `/v1/ws/orders/${orderId}`,
-  CART_SYNC: (userId: string) => `/v1/ws/cart/${userId}`,
 } as const;
