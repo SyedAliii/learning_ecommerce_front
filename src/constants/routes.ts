@@ -30,5 +30,5 @@ export const ROUTES = {
 } as const;
 
 export const WEBSOCKET_ENDPOINTS = {
-  PRODUCT_UPDATE: (productId: string) => `/v1/ws/products/update/${productId}`,
+  PRODUCT_UPDATE: `/v1/ws/products/update`,
 } as const;

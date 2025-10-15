@@ -7,7 +7,7 @@ class SocketService {
   connectToProductWebSocket(productId: string, onUpdate: (product: any) => void) {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const baseUrl = protocol === "wss" ? "wss://127.0.0.1:8000" : "ws://127.0.0.1:8000";
-    const endpoint = WEBSOCKET_ENDPOINTS.PRODUCT_UPDATE(productId);
+    const endpoint = WEBSOCKET_ENDPOINTS.PRODUCT_UPDATE;
     const url = `${baseUrl}${endpoint}`;
     
     const ws = new WebSocket(url);
@@ -15,7 +15,7 @@ class SocketService {
     return new Promise<() => void>((resolve, reject) => {
       ws.onopen = () => {
         console.log(`Connected to product ${productId} WebSocket`);
-        // resolve(() => ws.close());
+        resolve(() => ws.close());
       };
       
       ws.onmessage = (event) => {
