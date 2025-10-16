@@ -8,9 +8,9 @@ interface UseProductWebSocketProps {
   enabled?: boolean;
 }
 
-export function useProductDirectWebSocket({ 
-  onProductUpdate, 
-  enabled = true 
+export function useProductDirectWebSocket({
+  onProductUpdate,
+  enabled = true
 }: UseProductWebSocketProps) {
   const [wsState, setWsState] = useState<WebSocketState>('disconnected');
   const cleanupRef = useRef<(() => void) | null>(null);

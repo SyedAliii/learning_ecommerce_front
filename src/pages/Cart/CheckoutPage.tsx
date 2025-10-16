@@ -99,10 +99,10 @@ const CheckoutPage = () => {
         confirmOrderMutation.mutate();
       }, 1000);
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to place order. Please try again.',
+        description: `Failed to place order. Error: ${error["response"]["data"]["Generic Exception"]}`,
         variant: 'destructive',
       });
       setIsProcessing(false);
@@ -155,56 +155,6 @@ const CheckoutPage = () => {
 
         <form onSubmit={(e) => onSubmit(e)} className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {/* <Card>
-              <CardHeader>
-                <CardTitle>Shipping Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" {...register('name')} />
-                    {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" {...register('email')} />
-                    {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" {...register('phone')} />
-                  {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Input id="address" {...register('address')} />
-                  {errors.address && <p className="text-sm text-destructive">{errors.address.message}</p>}
-                </div>
-
-                <div className="grid sm:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City</Label>
-                    <Input id="city" {...register('city')} />
-                    {errors.city && <p className="text-sm text-destructive">{errors.city.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="zip">ZIP Code</Label>
-                    <Input id="zip" {...register('zip')} />
-                    {errors.zip && <p className="text-sm text-destructive">{errors.zip.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
-                    <Input id="country" {...register('country')} />
-                    {errors.country && <p className="text-sm text-destructive">{errors.country.message}</p>}
-                  </div>
-                </div>
-              </CardContent>
-            </Card> */}
-
             <Card>
               <CardHeader>
                 <CardTitle>Payment Method</CardTitle>
