@@ -4,14 +4,41 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ProductCard } from '@/components/product/ProductCard';
 import { productsApi } from '@/api/products.api';
+import { useCallback, useState } from 'react';
+import { Product } from '@/types';
+import { useProductDirectWebSocket } from '@/hooks/use-product-websocket';
 
 const SearchResultsPage = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+  const [products, setProducts] = useState<Product[]>([]);
 
-  const { data: products, isLoading } = useQuery({
+  const onProductUpdate = useCallback(
+      (updatedProduct: Product) => {
+        setProducts((prevProducts) => {
+          const index = prevProducts.findIndex(p => p.id === updatedProduct.id);
+          if (index === -1) return prevProducts;
+  
+          const updatedProducts = [...prevProducts];
+          updatedProducts[index] = updatedProduct;
+          return updatedProducts;
+        });
+      },
+      []
+    );
+  
+    const { wsState } = useProductDirectWebSocket({
+      onProductUpdate,
+      enabled: true
+    });
+
+  const { data: productData, isLoading } = useQuery({
     queryKey: ['search', query],
-    queryFn: () => productsApi.search(query),
+    queryFn: async () => {
+      const response = await productsApi.search(query);
+      setProducts(response);
+      return response;
+    },
     enabled: !!query,
   });
 

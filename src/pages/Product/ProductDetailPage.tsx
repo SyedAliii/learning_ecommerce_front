@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { QuantitySelector } from '@/components/ui/quantity-selector';
 import { productsApi } from '@/api/products.api';
-import { usersApi } from '@/api/users.api';
 import { cartApi } from '@/api/cart.api'; 
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useProductDirectWebSocket } from '@/hooks/use-product-websocket';
 import { ShoppingCart, Share2, Heart } from 'lucide-react';
 import { toast } from 'sonner';
+import { Product } from '@/types';
 
 const ProductDetailPage = () => {
   const { categorySlug, subCategorySlug, title, productId } = useParams<{ categorySlug: string; subCategorySlug: string; title: string; productId: string }>();
@@ -22,15 +22,15 @@ const ProductDetailPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
-  const [product, setProduct] = useState(null);
+  const [product, setProduct] = useState<Product | null>(null);
 
-  const onProductUpdate = useCallback((updatedProduct) => {
-    setProduct(updatedProduct);
+  const onProductUpdate = useCallback((updatedProduct: Product) => {
+    if (updatedProduct.id === product?.id) {
+      setProduct(updatedProduct);
+    }
   }, []);
 
-  // Use the custom hook for WebSocket connection
   const { wsState } = useProductDirectWebSocket({
-    productId,
     onProductUpdate,
     enabled: !!productId
   });

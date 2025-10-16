@@ -4,13 +4,11 @@ import { socketService } from '@/services/socket';
 type WebSocketState = 'connecting' | 'connected' | 'disconnected' | 'error';
 
 interface UseProductWebSocketProps {
-  productId: string | undefined;
   onProductUpdate: (product: any) => void;
   enabled?: boolean;
 }
 
 export function useProductDirectWebSocket({ 
-  productId, 
   onProductUpdate, 
   enabled = true 
 }: UseProductWebSocketProps) {
@@ -18,7 +16,7 @@ export function useProductDirectWebSocket({
   const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (!productId || !enabled) {
+    if (!enabled) {
       setWsState('disconnected');
       return;
     }
@@ -26,7 +24,7 @@ export function useProductDirectWebSocket({
     setWsState('connecting');
 
     // Use direct WebSocket connection for product updates
-    socketService.connectToProductWebSocket(productId, onProductUpdate)
+    socketService.connectToProductWebSocket(onProductUpdate)
       .then((cleanup) => {
         cleanupRef.current = cleanup;
         setWsState('connected');
@@ -43,7 +41,7 @@ export function useProductDirectWebSocket({
       }
       setWsState('disconnected');
     };
-  }, [productId, onProductUpdate, enabled]);
+  }, [onProductUpdate, enabled]);
 
   return { wsState };
 }

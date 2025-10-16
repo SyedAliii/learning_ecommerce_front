@@ -8,6 +8,8 @@ interface CartState {
   getItems: () => CartProduct[];
   addItem: (item: CartProduct) => void;
   removeItem: (productId: string) => void;
+  updateTitle: (productId: string, newTitle: string) => void;
+  updatePrice: (productId: string, newPrice: number) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   getTotal: () => number;
@@ -42,6 +44,22 @@ export const useCartStore = create<CartState>()(
         console.log('Removing item:', productId);
         return set((state) => ({
           items: state.items.filter((item) => item.id !== productId),
+        }));
+      },
+      updateTitle: (productId, newTitle) => {
+        console.log('Updating title:', productId, newTitle);
+        return set((state) => ({
+          items: state.items.map((item) => {
+            return item.id === productId ? { ...item, title: newTitle } : item;
+          }),
+        }));
+      },
+      updatePrice: (productId, newPrice) => {
+        console.log('Updating price:', productId, newPrice);
+        return set((state) => ({
+          items: state.items.map((item) => {
+            return item.id === productId ? { ...item, price: newPrice } : item;
+          }),
         }));
       },
       updateQuantity: (productId, quantity) => {

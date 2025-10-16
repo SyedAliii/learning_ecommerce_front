@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
@@ -8,14 +8,40 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { productsApi } from '@/api/products.api';
+import { useProductDirectWebSocket } from '@/hooks/use-product-websocket';
+import { Product } from '@/types';
 
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
 
-  const { data: products, isLoading } = useQuery({
+  const onProductUpdate = useCallback(
+    (updatedProduct: Product) => {
+      setProducts((prevProducts) => {
+        const index = prevProducts.findIndex(p => p.id === updatedProduct.id);
+        if (index === -1) return prevProducts;
+
+        const updatedProducts = [...prevProducts];
+        updatedProducts[index] = updatedProduct;
+        return updatedProducts;
+      });
+    },
+    []
+  );
+
+  const { wsState } = useProductDirectWebSocket({
+    onProductUpdate,
+    enabled: true
+  });
+
+  const { data: productData, isLoading } = useQuery({
     queryKey: ['products'],
-    queryFn: productsApi.getAll,
+    queryFn: async () => {
+      const response = await productsApi.getAll();
+      setProducts(response);
+      return response;
+    },
   });
 
   const handleSearch = (e: React.FormEvent) => {
@@ -28,7 +54,7 @@ const Home = () => {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      
+
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative overflow-hidden py-20 gradient-hero">

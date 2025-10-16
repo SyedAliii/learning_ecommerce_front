@@ -9,11 +9,27 @@ import { Trash2, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { cartApi } from '@/api/cart.api';
+import { useCallback, useEffect, useState } from 'react';
+import { CartProduct, Product } from '@/types';
+import { useProductDirectWebSocket } from '@/hooks/use-product-websocket';
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { items, removeItem, updateQuantity, clearCart, getTotal } = useCartStore();
+  const { items, updateTitle, updatePrice, removeItem, updateQuantity, clearCart, getTotal } = useCartStore();
   const { isAuthenticated } = useAuthStore();
+
+  const onProductUpdate = useCallback(
+      (updatedProduct: Product) => {
+        updatePrice(updatedProduct.id, updatedProduct.price);
+        updateTitle(updatedProduct.id, updatedProduct.title);
+      },
+      []
+    );
+  
+  const { wsState } = useProductDirectWebSocket({
+    onProductUpdate,
+    enabled: true
+  });
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
@@ -23,7 +39,6 @@ const CartPage = () => {
     }
     navigate('/checkout');
   };
-
   const addToCartMutation = useMutation({
     mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
       return await cartApi.addToCart(productId, quantity);
@@ -32,7 +47,6 @@ const CartPage = () => {
       toast.error(error.response?.data?.message || 'Add To Cart: Failed to sync with server cart');
     },
   });
-
   const removeFromCartMutation = useMutation({
     mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
       return await cartApi.removeFromCart(productId, quantity);
@@ -41,7 +55,6 @@ const CartPage = () => {
       toast.error(error.response?.data?.message || 'Remove From Cart: Failed to sync with server cart');
     },
   });
-
   const deleteCartMutation = useMutation({
     mutationFn: async () => {
       return await cartApi.clearCart();
@@ -50,7 +63,6 @@ const CartPage = () => {
       toast.error(error.response?.data?.message || 'Failed to delete cart on server');
     },
   });
-
   const handleAddToCart = (product_id, changeQuantity, current_qty) => {
     if (isAuthenticated) {
       updateQuantity(product_id, current_qty);
@@ -61,7 +73,6 @@ const CartPage = () => {
       toast.success('Added to cart!');
     }
   };
-
   const handleRemoveFromCart = (product_id, changeQuantity, current_qty) => {
     if (isAuthenticated) {
       removeFromCartMutation.mutate({ productId: product_id, quantity: changeQuantity });
@@ -80,7 +91,6 @@ const CartPage = () => {
       toast.success('Removed from cart!');
     }
   };
-
   const handleDeleteCart = () => {
     if (isAuthenticated) {
       deleteCartMutation.mutate();

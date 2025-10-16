@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -16,6 +16,8 @@ import { orderApi } from '@/api/order.api';
 import { toast } from '@/hooks/use-toast';
 import { ShoppingBag } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
+import { useProductDirectWebSocket } from '@/hooks/use-product-websocket';
+import { Product } from '@/types';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -32,8 +34,21 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { items, getTotal, clearCart } = useCartStore();
+  const { items, updateTitle, updatePrice, getTotal, clearCart } = useCartStore();
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const onProductUpdate = useCallback(
+        (updatedProduct: Product) => {
+          updatePrice(updatedProduct.id, updatedProduct.price);
+          updateTitle(updatedProduct.id, updatedProduct.title);
+        },
+        []
+      );
+    
+  const { wsState } = useProductDirectWebSocket({
+    onProductUpdate,
+    enabled: true
+  });
 
   const {
     register,
