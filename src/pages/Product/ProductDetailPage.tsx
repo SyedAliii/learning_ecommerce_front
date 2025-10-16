@@ -39,7 +39,7 @@ const ProductDetailPage = () => {
     queryKey: ['product', productId],
     queryFn: async () => {
       const response = await productsApi.getSingle(categorySlug!, subCategorySlug!, title!, productId!);
-      setProduct(response);
+      setProduct((prevProduct) => ({ ...prevProduct, ...response }));
       return response;
     },
     enabled: !!productId,
@@ -203,7 +203,6 @@ const ProductDetailPage = () => {
                   size="lg"
                   className="flex-1"
                   onClick={handleAddToCart}
-                  disabled={product.quantity === 0}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Add to Cart
