@@ -1,13 +1,13 @@
 import { io, Socket } from 'socket.io-client';
-import { SOCKET_URL, WEBSOCKET_ENDPOINTS } from '@/constants/routes';
+import { SOCKET_URL, SOCKET_SECURE_URL, WEBSOCKET_ENDPOINTS } from '@/constants/routes';
 
 class SocketService {
   connectToProductWebSocket(onUpdate: (product: any) => void) {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const baseUrl = protocol === "wss" ? "wss://127.0.0.1:8000" : "ws://127.0.0.1:8000";
+    const baseUrl = protocol === "wss" ? SOCKET_SECURE_URL : SOCKET_URL;
     const endpoint = WEBSOCKET_ENDPOINTS.PRODUCT_UPDATE;
     const url = `${baseUrl}${endpoint}`;
-    
+    console.log('Connecting to WebSocket URL:', url);
     const ws = new WebSocket(url);
     
     return new Promise<() => void>((resolve, reject) => {
@@ -25,8 +25,8 @@ class SocketService {
         }
       };
       
-      ws.onclose = () => {
-        console.log(`Product WebSocket closed`);
+      ws.onclose = (event) => {
+        console.log(`Product WebSocket closed. Code: ${event.code}, Reason: ${event.reason || 'No specific reason provided'}`);
       };
       
       ws.onerror = (error) => {

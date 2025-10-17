@@ -37,6 +37,7 @@ export const orderApi = {
 
   confirmOrder: async () => {
     const response = await apiClient.post('/v1/confirm_order');
+    console.log(response.data);
     return response.data;
   },
 
